@@ -11,14 +11,19 @@ const {
 const upload = require("../middleware/multerMiddleware");
 const { where } = require("sequelize");
 
+
+
+
+
 // Object for functionality
 
 class PatientClass {
+
   //route too display all patient
   patientdisplay = async (req, res) => {
     try {
-      const patientCount = await Patient.findAndCountAll({});
-      return res.json(patientCount);
+      const patientdisplay = await Patient.findAll({});
+      return res.json(patientdisplay);
     } catch (error) {
       return console.log(error);
     }
@@ -35,7 +40,7 @@ class PatientClass {
     }
   };
 
-  // Method to create patient's details
+  // method to create patient's details
   createPatient = async (req, res) => {
     const {
       id,
@@ -50,44 +55,40 @@ class PatientClass {
       organization,
     } = req.body;
 
-    // Validate inputs
-    const { error } = patientValidity.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+    //validate inputs
+    const check = patientValidity.validate(req.body);
+    if (check.error) {
+      return res.status(404).json(check.error.details[0].message);
     }
-
     try {
-      // Check if patient exists
-      const patientExist = await Patient.findOne({ where: { mobile_no } });
+      //check if patient exist
+      const patientExist = await Patient.findOne({
+        where: { mobile_no: req.body.mobile_no },
+      });
 
-      if (patientExist) {
-        return res.status(409).json({ message: "Patient already exists" }); // 409 Conflict
+      // create patient data if patient does not exist
+      if (!patientExist) {
+        return res.status(200).send(
+          Patient.create({
+            id,
+            firstname,
+            surname,
+            email,
+            mobile_no,
+            gender,
+            dob,
+            address,
+            education_qualification,
+            organization,
+          })
+        );
+      } else {
+        return res.status(404).json({msg:"Patient already exist"});
       }
-
-      // Create patient data if patient does not exist
-      const newPatient = await Patient.create({
-        id,
-        firstname,
-        surname,
-        email,
-        mobile_no,
-        gender,
-        dob,
-        address,
-        education_qualification,
-        organization,
-      });
-
-      // Send the created patient record to the user
-      return res.status(201).json({
-        message: "Patient created successfully",
-        patient: newPatient,
-      });
     } catch (error) {
-      console.error("Error creating patient:", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      throw error;
     }
-  }; // Close createPatient method
+  }; //createpatient method close
 
   //Method for edit patient details
   patientEdit = async (req, res) => {
@@ -138,9 +139,7 @@ class PatientClass {
           )
         );
       } else {
-        return res
-          .status(404)
-          .json({ msg: "Patient details not found for update" });
+        return res.status(404).json({msg:"Patient details not found for update"});
       }
     } catch (error) {
       throw error;
@@ -169,21 +168,22 @@ class PatientClass {
             mobile_no: req.body.mobile_no,
           },
         });
-        return res
-          .status(200)
-          .json({ msg: "Patient data deleted successfully" });
+        return res.status(200).json({msg:"Patient data deleted successfully"});
       } else {
-        return res.status(404).json({ msg: "Patient does not exist" });
+        return res.status(404).json({msg:"Patient does not exist"});
       }
     } catch (error) {
       throw error;
     }
   };
 
+
+ 
+
   //functionality to upload image
   // profilePics = async (req, res) => {
   //   try {
-  //     //
+  //     // 
   //     const mobile_no = req.body.mobile_no
 
   //     //validate field
@@ -214,8 +214,10 @@ class PatientClass {
   //   } catch (error) {
   //     throw error
   //   }
-
+    
   // }
+   
+  
 
   // // Display profile image
   // displayPics = async (req, res) => {
@@ -225,23 +227,33 @@ class PatientClass {
   //     if (check.error) {
   //       return res.status(404).send(check.error.details[0].message);
   //   }
-  //   //find patient
+  //   //find patient 
   //   const patientExist = Patient.findOne({
 
   //     where: { mobile_no: req.body.mobile_no },
   //   })
   //   if(patientExist){
-
+     
   //   res.send(resolve(patientExist.picture))
   //   console.log("file found")
-
+      
   //   }
-
+      
   //   } catch (error) {
-
+      
   //   }
-
+  
   // }
+  
+
+
+
+
+
+
+
+  
+  
 } //class close
 
 // creat instance of the patient class
@@ -251,6 +263,11 @@ const patientClass = new PatientClass();
 module.exports = {
   patientClass,
 };
+
+
+
+
+
 
 // Image.findByPk(req.params.id);
 //     if (!image) {

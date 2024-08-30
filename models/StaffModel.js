@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/staffConfig.js');
+const sequelize = require('../config/dbConfig.js');
+const { uniqueId } = require('lodash');
 
 const Staff = sequelize.define('Staff', {
     id: {
@@ -18,6 +19,10 @@ const Staff = sequelize.define('Staff', {
     email: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true, //Validate Mail format
+        }
     },
     gender: {
         type: DataTypes.STRING,
@@ -26,6 +31,11 @@ const Staff = sequelize.define('Staff', {
     mobileNumber: {
         type: DataTypes.STRING,
         allowNull: false,
+        // unique : true,
+        validate: {
+            isNumeric: true, // Validates its a number val
+            len: [10, 15],  // Set Lenght
+        }
     },
     practice: {
         type: DataTypes.STRING,
@@ -48,8 +58,11 @@ const Staff = sequelize.define('Staff', {
         allowNull: false,
     },
     dateOfBirth: {
-        type: DataTypes.STRING,
+        type: DataTypes.DATEONLY, // Uses Date format  YYYY-MM-DD
         allowNull: false,
+        validate: {
+            isDate: true, // Validate it uses the date format
+        }
     },
 });
 

@@ -4,7 +4,7 @@ const Joi = require("joi")
 
 //patient form validation
 const patientValidity = Joi.object({
-    id: Joi.string().required(),
+    id: Joi.string(),
     firstname: Joi.string().required(),
     surname: Joi.string().required(),
     email: Joi.string().email(),

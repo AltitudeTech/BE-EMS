@@ -40,6 +40,15 @@ class StaffRepository {
     async findAll() {
         return await Staff.findAll();
     }
+
+
+    async findByEmailOrMobile(email, mobileNumber) {
+        return await Staff.findOne({
+            where: {
+                [Op.or]: [{ email: email }, { mobileNumber: mobileNumber }],
+            },
+        });
+    }
 }
 
 module.exports = new StaffRepository();
