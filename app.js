@@ -11,7 +11,11 @@ const app = express();
 //middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 app.use(morgan("tiny"));
 const port = process.env.PORT || 5005;
 
