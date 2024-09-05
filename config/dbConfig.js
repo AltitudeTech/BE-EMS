@@ -1,42 +1,49 @@
-// //import the dependencies
+// Import dependencies
+const { Sequelize } = require("sequelize");
+require("dotenv").config(); // Ensure .env variables are loaded
 
-const Sequelize = require("sequelize");
-require("dotenv").config();
-
-//declaring database configuration parameter
-
+// Declaring database configuration parameters
 const CONFIG = {
-  DB_name: process.env.DB_name,
-  DB_username: process.env.DB_username,
-  DB_password: process.env.DB_password,
-  DB_dialect: process.env.DB_dialect,
-  DB_host: process.env.DB_host,
-  DB_port: process.env.DB_port, 
+  DB_NAME: process.env.DB_NAME,
+  DB_USERNAME: process.env.DB_USERNAME,
+  DB_PASSWORD: process.env.DB_PASSWORD,
+  DB_DIALECT: process.env.DB_DIALECT || "postgres",
+  DB_HOST: process.env.DB_HOST || "localhost",
+  DB_PORT: parseInt(process.env.DB_PORT, 10) || 5432, // Default PostgreSQL port
 };
 
-//database connection
-const db = new Sequelize(
-  CONFIG.DB_name,
-  CONFIG.DB_username,
-  CONFIG.DB_password,
+// Create a new Sequelize instance
+const sequelize = new Sequelize(
+  CONFIG.DB_NAME,
+  CONFIG.DB_USERNAME,
+  CONFIG.DB_PASSWORD,
   {
-    host: CONFIG.DB_host,
-    dialect: CONFIG.DB_dialect,
-    port: CONFIG.DB_port,
-    logging: false, // Optionally disable logging 
-    dialectOptions: { 
-      connectTimeout: 60000, // 60 seconds 
-    }, 
+    host: CONFIG.DB_HOST,
+    dialect: CONFIG.DB_DIALECT, // Should be a string such as 'postgres'
+    port: CONFIG.DB_PORT,
+    logging: false, // Optionally disable logging
+    dialectOptions: {
+      connectTimeout: 60000, // 60 seconds
+    },
   }
 );
 
-//check for errors
-try {
-  db.authenticate();
-  db.sync({ false: false });
-  console.log("Connection to database successsfull and synced successfully");
-} catch (error) {
-  throw error;
-}
+// Function to authenticate and sync the database
+const initializeDatabase = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Connection to PostgreSQL database successful");
 
-module.exports = db;
+    await sequelize.sync({ alter: true }); // Ensures database schema is up-to-date without altering
+    console.log("Database synchronized successfully");
+  } catch (error) {
+    console.error("Unable to connect to the PostgreSQL database:", error);
+    throw error;
+  }
+};
+
+// Initialize the database
+initializeDatabase();
+
+// Export the Sequelize instance
+module.exports = sequelize;

@@ -1,24 +1,18 @@
-// require needed modules
 const Joi = require("joi");
-const Patient = require("../models/PatientModel");
 const {
   patientValidity,
   patientUpdate,
   deletePatientValidity,
+  patientCreateSchema,
 } = require("../validations/patientFormValidation");
 
 // requiring multer library
 const upload = require("../middleware/multerMiddleware");
-const { where } = require("sequelize");
-
-
-
-
+const { Patient } = require("../models");
 
 // Object for functionality
 
 class PatientClass {
-
   //route too display all patient
   patientdisplay = async (req, res) => {
     try {
@@ -40,55 +34,58 @@ class PatientClass {
     }
   };
 
-  // method to create patient's details
+  // Method to create patient's details
   createPatient = async (req, res) => {
-    const {
-      id,
-      firstname,
-      surname,
-      email,
-      mobile_no,
-      gender,
-      dob,
-      address,
-      education_qualification,
-      organization,
-    } = req.body;
-
-    //validate inputs
-    const check = patientValidity.validate(req.body);
-    if (check.error) {
-      return res.status(404).json(check.error.details[0].message);
-    }
     try {
-      //check if patient exist
+      // Destructure the request body
+      const {
+        firstName,
+        lastName,
+        email,
+        phone,
+        gender,
+        dateOfBirth,
+        address,
+        educationQualification,
+        organization,
+      } = req.body;
+
+      // Validate input using Joi schema
+      const { error } = patientCreateSchema.validate(req.body);
+      if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+      }
+
+      // Check if patient already exists by phone number
       const patientExist = await Patient.findOne({
-        where: { mobile_no: req.body.mobile_no },
+        where: { phone },
       });
 
-      // create patient data if patient does not exist
-      if (!patientExist) {
-        return res.status(200).send(
-          Patient.create({
-            id,
-            firstname,
-            surname,
-            email,
-            mobile_no,
-            gender,
-            dob,
-            address,
-            education_qualification,
-            organization,
-          })
-        );
-      } else {
-        return res.status(404).json({msg:"Patient already exist"});
+      if (patientExist) {
+        return res.status(409).json({ message: "Patient already exists" });
       }
+
+      // Create new patient if they don't exist
+      const newPatient = await Patient.create({
+        firstName,
+        lastName,
+        email,
+        phone,
+        gender,
+        dateOfBirth,
+        address,
+        educationQualification,
+        organization,
+      });
+
+      // Respond with the newly created patient data
+      return res.status(201).json(newPatient);
     } catch (error) {
-      throw error;
+      // Handle server errors
+      console.error("Error creating patient:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
     }
-  }; //createpatient method close
+  };
 
   //Method for edit patient details
   patientEdit = async (req, res) => {
@@ -139,7 +136,9 @@ class PatientClass {
           )
         );
       } else {
-        return res.status(404).json({msg:"Patient details not found for update"});
+        return res
+          .status(404)
+          .json({ msg: "Patient details not found for update" });
       }
     } catch (error) {
       throw error;
@@ -168,22 +167,21 @@ class PatientClass {
             mobile_no: req.body.mobile_no,
           },
         });
-        return res.status(200).json({msg:"Patient data deleted successfully"});
+        return res
+          .status(200)
+          .json({ msg: "Patient data deleted successfully" });
       } else {
-        return res.status(404).json({msg:"Patient does not exist"});
+        return res.status(404).json({ msg: "Patient does not exist" });
       }
     } catch (error) {
       throw error;
     }
   };
 
-
- 
-
   //functionality to upload image
   // profilePics = async (req, res) => {
   //   try {
-  //     // 
+  //     //
   //     const mobile_no = req.body.mobile_no
 
   //     //validate field
@@ -214,10 +212,8 @@ class PatientClass {
   //   } catch (error) {
   //     throw error
   //   }
-    
+
   // }
-   
-  
 
   // // Display profile image
   // displayPics = async (req, res) => {
@@ -227,33 +223,23 @@ class PatientClass {
   //     if (check.error) {
   //       return res.status(404).send(check.error.details[0].message);
   //   }
-  //   //find patient 
+  //   //find patient
   //   const patientExist = Patient.findOne({
 
   //     where: { mobile_no: req.body.mobile_no },
   //   })
   //   if(patientExist){
-     
+
   //   res.send(resolve(patientExist.picture))
   //   console.log("file found")
-      
+
   //   }
-      
+
   //   } catch (error) {
-      
+
   //   }
-  
+
   // }
-  
-
-
-
-
-
-
-
-  
-  
 } //class close
 
 // creat instance of the patient class
@@ -263,11 +249,6 @@ const patientClass = new PatientClass();
 module.exports = {
   patientClass,
 };
-
-
-
-
-
 
 // Image.findByPk(req.params.id);
 //     if (!image) {

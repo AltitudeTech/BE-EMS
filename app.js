@@ -1,15 +1,28 @@
-// Import the required dependencies
+// Import required dependencies
 const express = require("express");
 const cron = require("node-cron");
 const axios = require("axios");
 const cors = require("cors");
 const morgan = require("morgan");
+require("dotenv").config();
 
-// Database configuration
-const db = require("./config/dbConfig");
+// Database and models
+require("./models");
 
-// Import models
-require("./models/PatientModel");
+// Import routes
+const organizationRoute = require("./routes/organizationRoute");
+const staffRoute = require("./routes/staffRoute");
+const patientRoute = require("./routes/patientRoute");
+const appointmentRoute = require("./routes/appointmentRoute");
+// const settingRoute = require("./routes/settingRoute");
+
+// Configure CORS
+const corsOptions = {
+  origin: [process.env.CLIENT_URL, "*"],
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  allowedHeaders: "Content-Type,Authorization",
+};
 
 // Create Express app
 const app = express();
@@ -17,7 +30,7 @@ const app = express();
 // Middleware setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors({ origin: "*" }));
+app.use(cors(corsOptions));
 app.use(morgan("tiny"));
 
 // Define the port
@@ -36,11 +49,14 @@ cron.schedule("*/30 * * * *", async () => {
 });
 
 // Define routes
-app.use("/EMS/patients", require("./routes/patientRoute"));
-app.use("/EMS/staff", require("./routes/StaffDataController"));
+app.use("/api/v1/organization", organizationRoute);
+app.use("/api/v1/staff", staffRoute);
+app.use("/api/v1/patient", patientRoute);
+app.use("/api/v1/appointment", appointmentRoute);
+// app.use("/api/v1/setting", settingRoute);
 
-// Start the server
-const startServer = () => {
+// Synchronize models and start the server
+const startServer = async () => {
   try {
     app.listen(port, () => {
       console.log(`App is listening on port ${port}`);

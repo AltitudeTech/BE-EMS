@@ -1,47 +1,46 @@
-//require joi dependencies
-const Joi = require("joi")
+const Joi = require("joi");
 
+// Validation schema for creating a patient
+const patientCreateSchema = Joi.object({
+  id: Joi.string().uuid().optional(),
+  firstName: Joi.string().min(1).max(100).required(),
+  lastName: Joi.string().min(1).max(100).required(),
+  email: Joi.string().email().optional(),
+  role: Joi.string(),
+  phone: Joi.string()
+    .pattern(/^[0-9]{10,15}$/)
+    .required(),
+  gender: Joi.string().valid("Male", "Female", "Other").required(),
+  dateOfBirth: Joi.date().iso().optional(),
+  address: Joi.string().max(250).optional(),
+  educationQualification: Joi.string().max(250).optional(),
+  org_id: Joi.string().optional(),
+});
 
-//patient form validation
-const patientValidity = Joi.object({
-    id: Joi.string(),
-    firstname: Joi.string().required(),
-    surname: Joi.string().required(),
-    email: Joi.string().email(),
-    mobile_no: Joi.string().required(),
-    gender: Joi.string().required(),
-    dob: Joi.string(),
-    address: Joi.string(),
-    education_qualification: Joi.string(),
-    organization: Joi.string(),
-})
+// Validation schema for updating patient details
+const patientUpdateSchema = Joi.object({
+  firstName: Joi.string().min(1).max(100).optional(),
+  lastName: Joi.string().min(1).max(100).optional(),
+  email: Joi.string().email().optional(),
+  phone: Joi.string()
+    .pattern(/^[0-9]{10,15}$/)
+    .optional(),
+  gender: Joi.string().valid("Male", "Female", "Other").optional(),
+  dateOfBirth: Joi.date().iso().optional(),
+  address: Joi.string().max(250).optional(),
+  educationQualification: Joi.string().max(250).optional(),
+  organization: Joi.string().optional(),
+});
 
+// Validation schema for deleting a patient
+const patientDeleteSchema = Joi.object({
+  phone: Joi.string()
+    .pattern(/^[0-9]{10,15}$/)
+    .required(),
+});
 
-//patient update details
-
-const patientUpdate = Joi.object({
-    firstname: Joi.string(),
-    surname: Joi.string(),
-    email: Joi.string().email(),
-    mobile_no: Joi.string(),
-    gender: Joi.string(),
-    dob: Joi.string(),
-    address: Joi.string(),
-    education_qualification: Joi.string(),
-    organization: Joi.string(),
-
-
-})
-
-
-//delete  dedtails
-const deletePatientValidity =  Joi.object({
-    mobile_no: Joi.string().required()
-})
-
-//module export
 module.exports = {
-    patientValidity,
-    patientUpdate,
-    deletePatientValidity
-}
+  patientCreateSchema,
+  patientUpdateSchema,
+  patientDeleteSchema,
+};
