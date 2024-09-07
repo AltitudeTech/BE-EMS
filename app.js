@@ -30,6 +30,7 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:5173",
   "http://localhost:3000",
+  "https://skill-top.vercel.app",
 ];
 const corsOptions = {
   origin: (origin, callback) => {
