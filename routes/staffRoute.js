@@ -1,12 +1,13 @@
 const express = require("express");
 
-const staff = require("../controllers/staffController");
+const staff = require("../controllers/staffController2");
 const router = express.Router();
 
 // Routes for staff
 router.route("/list").get(staff.staffClass.staffDisplay);
 router.route("/count").get(staff.staffClass.staffCount); // Changed to GET for consistency
 router.route("/create").post(staff.staffClass.createStaff);
+router.route("/search").get(staff.staffClass.searchStaff);
 router.route("/edit").put(staff.staffClass.staffEdit);
 router.route("/delete").delete(staff.staffClass.deleteStaff);
 
