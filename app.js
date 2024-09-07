@@ -17,22 +17,33 @@ const patientRoute = require("./routes/patientRoute");
 const appointmentRoute = require("./routes/appointmentRoute");
 // const settingRoute = require("./routes/settingRoute");
 
-// Configure CORS
-const corsOptions = {
-  origin: [process.env.CLIENT_URL, "*", "http://localhost:5173"],
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  allowedHeaders: "Content-Type,Authorization",
-};
-
 // Create Express app
 const app = express();
 
 // Middleware setup
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors(corsOptions));
 app.use(morgan("tiny"));
+
+// Configure CORS
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  allowedHeaders: "Content-Type,Authorization",
+};
+app.use(cors(corsOptions));
 
 // Define the port
 const port = process.env.PORT || 5005;
